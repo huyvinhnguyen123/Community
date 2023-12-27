@@ -17,16 +17,22 @@ public class UserDataInput {
     @NotEmpty(message = "{User.birthDay.notEmpty}")
     @ValidBirthDate
     private String birthDate;
+
+    @NotNull(message = "{User.username.notNull}")
+    @NotEmpty(message = "{User.username.notEmpty}")
     @ValidUsername
     private String name;
+
     @NotNull(message = "{User.loginId.notNull}")
     @NotEmpty(message = "{User.loginId.notEmpty}")
     @Email
     private String email;
+
     @NotNull(message = "{User.password.notNull}")
     @NotEmpty(message = "{User.password.notEmpty}")
     @ValidPassword
     private String password;
+
     private MultipartFile file;
     private String fileId;
 }

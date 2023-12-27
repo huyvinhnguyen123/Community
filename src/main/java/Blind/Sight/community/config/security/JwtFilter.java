@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -21,6 +22,7 @@ import java.io.IOException;
 public class JwtFilter extends OncePerRequestFilter {
     private final UserRepositoryPg userRepositoryPg;
     private final JwtUtil jwtUtil;
+    private RedisTemplate<String, String> redisTemplate;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -43,6 +45,13 @@ public class JwtFilter extends OncePerRequestFilter {
             User user = userRepositoryPg.findUserByEmail(email).orElseThrow(
                     () -> new NullPointerException("Not found this user: " + email)
             );
+
+            // Use the same key format to check if the token is blacklisted
+//            String tokenBlackList = jwtUtil.getBlackListToken(user.getEmail());
+//            if (redisTemplate.opsForValue().get(tokenBlackList) != null) {
+//                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+//                return;
+//            }
 
             if(Boolean.TRUE.equals(jwtUtil.validateToken(token, user))) {
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());

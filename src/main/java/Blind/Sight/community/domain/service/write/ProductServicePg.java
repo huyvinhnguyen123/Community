@@ -1,13 +1,16 @@
 package Blind.Sight.community.domain.service.write;
 
-import Blind.Sight.community.domain.entity.Category;
-import Blind.Sight.community.domain.entity.Image;
-import Blind.Sight.community.domain.entity.Product;
+import Blind.Sight.community.domain.entity.*;
 import Blind.Sight.community.domain.entity.many.ProductCategory;
 import Blind.Sight.community.domain.entity.many.ProductImage;
 import Blind.Sight.community.domain.repository.postgresql.ProductRepositoryPg;
+import Blind.Sight.community.domain.repository.postgresql.ReviewRepositoryPg;
+import Blind.Sight.community.domain.repository.postgresql.UserRepositoryPg;
+import Blind.Sight.community.domain.repository.postgresql.query.ReviewDataForSendMail;
+import Blind.Sight.community.domain.service.custom.EmailDetailsService;
 import Blind.Sight.community.domain.service.many.ProductCategoryService;
 import Blind.Sight.community.domain.service.many.ProductImageService;
+import Blind.Sight.community.dto.email.EmailDetails;
 import Blind.Sight.community.dto.product.ProductInput;
 import Blind.Sight.community.util.common.DeleteFlag;
 import lombok.RequiredArgsConstructor;
@@ -18,21 +21,35 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class ProductServicePg {
     private final ProductRepositoryPg productRepositoryPg;
+    private final ReviewRepositoryPg reviewRepositoryPg;
     private final ProductImageService productImageService;
     private final ProductCategoryService productCategoryService;
     private final ImageServicePg imageServicePg;
     private final CategoryServicePg categoryServicePg;
+    private final UserRepositoryPg userRepositoryPg;
+    private final EmailDetailsService emailDetailsService;
+
     private static final String LOG_CREATE_SUCCESS = "Save product success";
     private static final Double SERVER_DEFAULT_EXCHANGE_RATE = 24290.50;
 
     @Value("${drive.folder.products}")
     private String productPath;
+
+    private void sendProductUpdateMail(String[] emails, String sku, String productName, Double price) {
+        EmailDetails emailDetails = new EmailDetails();
+        emailDetails.setRecipients(emails);
+        emailDetails.setSubject("You have 1 notification about product's information");
+        emailDetailsService.sendMultipleMailsWithTemplate(emailDetails, sku, productName, price);
+    }
 
     public Product findProductById(String productId) {
         Product existProduct = productRepositoryPg.findById(productId).orElseThrow(
@@ -106,6 +123,31 @@ public class ProductServicePg {
         }
 
         log.info("Update product success");
+
+        sendMailUpdateProduct(existProduct.getProductId());
+    }
+
+    private void sendMailUpdateProduct(String productId) {
+        Product existProduct = findProductById(productId);
+        List<ReviewDataForSendMail> existReviews = reviewRepositoryPg.findReviewByProductId(existProduct.getProductId());
+        List<String> emails = new ArrayList<>();
+
+        for(ReviewDataForSendMail data: existReviews) {
+            User existUser = userRepositoryPg.findById(data.getUserId()).orElseThrow(
+                    () -> new NullPointerException("Not found this user: " + data.getUserId())
+            );
+            log.info("Found user");
+
+            emails.add(existUser.getEmail());
+            String[] emailArray = emails.toArray(new String[0]);
+            sendProductUpdateMail(
+                    emailArray,
+                    existProduct.getSku(),
+                    existProduct.getName(),
+                    existProduct.getPrice()
+            );
+
+        }
     }
 
     public void deleteProduct(String productId) {

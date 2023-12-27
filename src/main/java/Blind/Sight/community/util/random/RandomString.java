@@ -23,4 +23,19 @@ public class RandomString {
         return sb.toString();
     }
 
+    /**
+     * Generate random String can be used for unlock code
+     *
+     * @param len - input your len sight
+     * @return - String
+     */
+    public static String generateRandomStringSimple(int len) {
+        String chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghi"
+                +"jklmnopqrstuvwxyz";
+        StringBuilder sb = new StringBuilder(len);
+        for (int i = 0; i < len; i++)
+            sb.append(chars.charAt(random.nextInt(chars.length())));
+        return sb.toString();
+    }
+
 }

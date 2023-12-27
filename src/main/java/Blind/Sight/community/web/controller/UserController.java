@@ -8,6 +8,7 @@ import Blind.Sight.community.dto.user.UserSearchInput;
 import Blind.Sight.community.web.response.UserSearchResponse;
 import Blind.Sight.community.web.response.common.ResponseDto;
 import Blind.Sight.community.web.response.mapper.UserSearchMapper;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -48,6 +49,16 @@ public class UserController {
         userServicePg.updateUserAndDeleteImage(authentication, userId, userDataInput.getFileId());
         return ResponseEntity.ok(ResponseDto.build().withMessage("OK"));
     }
+
+    @PostMapping("/lock-account")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<ResponseDto<Object>> lockUser(Authentication authentication,
+                                                        @Valid @RequestParam String userId, @RequestParam String imageId) throws GeneralSecurityException, IOException {
+        log.info("Request locking account...");
+        userServicePg.lockUser(authentication,userId,imageId);
+        return ResponseEntity.ok(ResponseDto.build().withMessage("OK"));
+    }
+
 
     @GetMapping("/search")
     public ResponseEntity<ResponseDto<Object>> searchListOfUsers(@RequestParam(defaultValue = "0") int page,

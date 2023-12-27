@@ -1,16 +1,22 @@
 package Blind.Sight.community.exception;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.http.HttpStatus;
 
 import java.time.ZonedDateTime;
 
 @Getter
+@Setter
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiError {
-    private final String message;
-    private final Throwable throwable;
-    private final HttpStatus httpStatus;
-    private final ZonedDateTime zonedDateTime;
+    private String message;
+    private Throwable throwable;
+    private HttpStatus httpStatus;
+    private ZonedDateTime zonedDateTime;
+
+    public ApiError() {}
 
     public ApiError(String message, Throwable throwable, HttpStatus httpStatus, ZonedDateTime zonedDateTime) {
         this.message = message;

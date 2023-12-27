@@ -15,6 +15,7 @@ public interface OtpRepositoryPg extends JpaRepository<Otp, Long> {
             FROM Otps o
             LEFT JOIN Users u ON u.userId = o.userId
             WHERE u.email = :email
+            OR u.oldLoginId = :email
             AND o.otpid = (SELECT MAX(otpid) FROM Otps);
             """, nativeQuery = true)
     Optional<Otp> findByEmail(@Param("email") String email);

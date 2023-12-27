@@ -4,6 +4,7 @@ import Blind.Sight.community.config.security.JwtUtil;
 import Blind.Sight.community.domain.service.write.UserServicePg;
 import Blind.Sight.community.dto.user.LoginInput;
 import Blind.Sight.community.dto.user.ResetPasswordInput;
+import Blind.Sight.community.dto.user.UnlockUserInput;
 import Blind.Sight.community.dto.user.UserDataInput;
 import Blind.Sight.community.exception.HandleRequest;
 import Blind.Sight.community.web.response.LoginResponse;
@@ -15,9 +16,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.net.SocketTimeoutException;
+import java.security.GeneralSecurityException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -45,20 +50,33 @@ public class AuthenticationController {
         return ResponseEntity.ok(ResponseDto.build().withMessage("OK"));
     }
 
-    @PostMapping("/send")
-            public ResponseEntity<ResponseDto<Object>> sendEmail(@RequestParam String email) {
+    @PostMapping("/send-reset-password")
+    public ResponseEntity<ResponseDto<Object>> sendEmailResetPassword(@RequestParam String email) {
         log.info("Request sending mail...");
-        userServicePg.sendMail(email);
+        userServicePg.sendMailResetPassword(email);
         return ResponseEntity.ok(ResponseDto.build().withMessage("OK"));
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<ResponseDto<Object>> resetPassword(@Valid @RequestBody ResetPasswordInput resetPasswordInput) {
+    public ResponseEntity<ResponseDto<Object>> resetPassword(@Valid @RequestBody ResetPasswordInput resetPasswordInput) throws SocketTimeoutException {
         log.info("Request resetting password...");
         userServicePg.resetPassword(resetPasswordInput);
         return ResponseEntity.ok(ResponseDto.build().withMessage("OK"));
     }
 
+    @PostMapping("/send-unlock-account")
+    public ResponseEntity<ResponseDto<Object>> sendEmailUnlockUser(@RequestParam String email) {
+        log.info("Request sending mail...");
+        userServicePg.sendMailUnlockUser(email);
+        return ResponseEntity.ok(ResponseDto.build().withMessage("OK"));
+    }
+
+    @PostMapping("/unlock-account")
+    public ResponseEntity<ResponseDto<Object>> unlockUser(@Valid @RequestBody UnlockUserInput unlockUserInput) throws SocketTimeoutException {
+        log.info("Request unlocking user...");
+        userServicePg.unlockUser(unlockUserInput);
+        return ResponseEntity.ok(ResponseDto.build().withMessage("OK"));
+    }
 
     @PostMapping("/login")
     public ResponseEntity<ResponseDto<Object>> login(@Valid @RequestBody LoginInput loginInput, BindingResult bindingResult) {
@@ -75,5 +93,12 @@ public class AuthenticationController {
         LoginResponse loginResponse = LoginMapper.mapToLogin(token, refreshToken);
         log.info("Login successfully");
         return ResponseEntity.ok(ResponseDto.build().withData(loginResponse));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ResponseDto<Object>> logout(Authentication authentication) {
+        log.info("Request logout...");
+        userServicePg.logout(authentication, jwtUtil);
+        return ResponseEntity.ok(ResponseDto.build().withMessage("OK"));
     }
 }

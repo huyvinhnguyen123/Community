@@ -23,6 +23,7 @@ import java.util.function.Function;
 public class JwtUtil {
     private final String secretKey;
     private static final String REDIS_KEY_PREFIX = "jwt:";
+    private static final String REDIS_KEY_BLACK_LIST = "black_list:";
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
 
@@ -41,6 +42,20 @@ public class JwtUtil {
             log.warn("Key {} doesn't exist in Redis", key);
         }
     }
+
+    public void setBlackListToken(String key) {
+        String token = redisTemplate.opsForValue().get(key);
+        String tokenBlackList = REDIS_KEY_BLACK_LIST + token;
+        redisTemplate.opsForValue().set(tokenBlackList, "true");
+        redisTemplate.expire(tokenBlackList,5, TimeUnit.SECONDS);
+    }
+
+    public String getBlackListToken(String key) {
+        String token = redisTemplate.opsForValue().get(key);
+        String tokenBlackList = REDIS_KEY_BLACK_LIST + token;
+        return redisTemplate.opsForValue().get(tokenBlackList);
+    }
+
 
     public String createToken(User user) {
         // create token with these fields

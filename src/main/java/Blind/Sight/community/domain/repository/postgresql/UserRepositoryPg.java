@@ -12,6 +12,7 @@ import java.util.Optional;
 @Repository
 public interface UserRepositoryPg extends JpaRepository<User, String> {
     Optional<User> findUserByEmail(String email);
+    Optional<User> findUserByOldLoginId(String email);
 
     @Query(value = """
             SELECT u.username, u.birthdate, u.email

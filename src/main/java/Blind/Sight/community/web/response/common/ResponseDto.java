@@ -9,6 +9,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.util.Map;
+
 /**
  * DTO wrapper response for all APIs.<br>
  * Format will be: { code: ..., message: ..., data: ... }
@@ -86,6 +88,20 @@ public class ResponseDto<T> {
      */
     public ResponseDto<T> withData(T data) {
         this.data = data;
+        return this;
+    }
+
+    /**
+     * Set error inside data  for the response.
+     *
+     * @param data response data
+     * @return ResponseDto
+     */
+    public ResponseDto<T> withDataAndError(T data, String error) {
+        this.data = data;
+        if (data instanceof Map<?,?>) {
+            ((Map<String, String>) data).put("error", error);
+        }
         return this;
     }
 

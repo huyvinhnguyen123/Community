@@ -56,11 +56,14 @@ public class SecurityConfig {
                         .requestMatchers("api/v1/products/delete").hasRole(ADMIN)
 
                         .requestMatchers("api/v1/users/user/update").hasRole(USER)
+                        .requestMatchers("api/v1/users/lock-account").hasRole(USER)
 
                         .requestMatchers("api/v1/system/prepare").permitAll()
                         .requestMatchers("api/v1/register").permitAll()
-                        .requestMatchers("api/v1/send").permitAll()
+                        .requestMatchers("api/v1/send-reset-password").permitAll()
                         .requestMatchers("api/v1/reset-password").permitAll()
+                        .requestMatchers("api/v1/send-unlock-account").permitAll()
+                        .requestMatchers("api/v1/unlock-account").permitAll()
                         .requestMatchers("api/v1/login").permitAll()
                         .requestMatchers("api/v1/add-to-cart").permitAll()
 

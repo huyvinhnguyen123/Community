@@ -32,6 +32,18 @@ public class OtpService {
         return existUser;
     }
 
+    private User findUserByOldLoginId(String email) {
+        User existUser = userRepositoryPg.findUserByOldLoginId(email).orElseThrow(
+                () -> {
+                    log.error("Not found this user: {}", email);
+                    return new NullPointerException("Not found this user: " + email);
+                }
+        );
+
+        log.info("Found user");
+        return existUser;
+    }
+
     public Otp generateOtp(String email) {
         User existUser = findUserByEmail(email);
 
@@ -42,6 +54,20 @@ public class OtpService {
 
         otpRepositoryPg.save(otp);
         log.info("Create otp success");
+
+        return otp;
+    }
+
+    public Otp generateUnlockCode(String email) {
+        User existUser = findUserByOldLoginId(email);
+
+        Otp otp = new Otp();
+        otp.setCode(RandomString.generateRandomStringSimple(OTP_LENGTH));
+        otp.setUser(existUser);
+        otp.setTimeSpecify(otp.getTimeDeleted().getMinute() - otp.getTimeCreated().getMinute());
+
+        otpRepositoryPg.save(otp);
+        log.info("Create unlock code success");
 
         return otp;
     }
